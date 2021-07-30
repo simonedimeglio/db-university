@@ -7,6 +7,17 @@ TRACCIA / ELENCO QUERY DA SVILUPPARE
 6) Selezionare tutti i corsi di laurea magistrale
 7) Da quanti dipartimenti è composta l’università?
 8) Quanti sono gli insegnanti che non hanno un numero di telefono?
+9) Contare quanti iscritti ci sono stati ogni anno
+10) Contare gli insegnanti che hanno l’ufficio nello stesso edificio
+11) Calcolare la media dei voti di ogni appello d’esame
+12) Contare quanti corsi di laurea ci sono per ogni dipartimento
+13) Selezionare tutti gli studenti iscritti al Corso di Laurea in Economia
+14) Selezionare tutti i Corsi di Laurea del Dipartimento di Neuroscienze
+15) Selezionare tutti i corsi in cui insegna Fulvio Amato (id=44)
+16) Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e nome
+17) Selezionare tutti i corsi di laurea con i relativi corsi e insegnanti
+18) Selezionare tutti i docenti che insegnano nel Dipartimento di Matematica (54)
+19 BONUS) Selezionare per ogni studente quanti tentativi d’esame ha sostenuto per superare ciascuno dei suoi esami
 
 Risposte: 
 1) SELECT * FROM `students` WHERE `date_of_birth` >= '1990-01-01' AND `date_of_birth` <= '1990-12-31'
@@ -14,6 +25,17 @@ Risposte:
 3) SELECT * FROM `students` WHERE `date_of_birth` <= '1991-07-29'
 4) SELECT * FROM `courses` WHERE `period` = 'I semestre' AND `year` = 1
 5) SELECT * FROM `exams` WHERE `date` = '2020-06-20' AND `hour` > '14:00:00'
-6) SELECT * FROM `courses` WHERE `year` = 5
+6) SELECT * FROM `courses` WHERE `level` = 'magistrale'
 7) SELECT COUNT(*) FROM `departments`
 8) SELECT COUNT(*) FROM `teachers` WHERE `phone` IS NULL
+9) SELECT YEAR(enrolment_date), COUNT(*) FROM `students` GROUP BY YEAR(enrolment_date) ASC
+10) SELECT office_address, COUNT(*) FROM `teachers` GROUP BY office_address ORDER BY `COUNT(*)` ASC
+11) SELECT exams.course_id, AVG(exam_student.vote) FROM `exam_student` INNER JOIN exams ON exam_student.exam_id = exams.id GROUP BY exams.course_id
+12) SELECT departments.name, degrees.name, COUNT(*) FROM `degrees` INNER JOIN departments ON degrees.id = departments.id GROUP BY departments.name
+13) SELECT students.name,students.surname, degrees.name FROM `students` INNER JOIN degrees ON students.degree_id = degrees.id WHERE degrees.name LIKE '%Economia' ORDER BY `students`.`surname` ASC
+14) SELECT * FROM `degrees` INNER JOIN departments ON degrees.id = departments.id WHERE departments.name = 'Dipartimento di Neuroscienze'
+15) SELECT * FROM `courses` INNER JOIN course_teacher ON courses.id = course_teacher.course_id INNER JOIN teachers ON course_teacher.teacher_id = teachers.id WHERE teachers.id = 44
+16) SELECT students.surname, students.name, degrees.name, departments.name FROM `students` INNER JOIN degrees ON students.degree_id = degrees.id INNER JOIN departments ON degrees.department_id = departments.id ORDER BY `students`.`surname` ASC
+17) SELECT degrees.name, courses.name, teachers.surname, teachers.name FROM `degrees` INNER JOIN courses ON degrees.id = courses.degree_id INNER JOIN course_teacher ON courses.id = course_teacher.course_id INNER JOIN teachers ON course_teacher.teacher_id = teachers.id ORDER BY degrees.name
+18) SELECT teachers.surname, teachers.name, departments.name FROM `teachers` INNER JOIN course_teacher ON teachers.id = course_teacher.teacher_id INNER JOIN courses ON course_teacher.course_id = courses.id INNER JOIN degrees ON degrees.id = courses.degree_id INNER JOIN departments ON degrees.department_id = departments.id WHERE departments.name LIKE '%Matematica' ORDER BY `teachers`.`surname` ASC
+19 BONUS) SELECT students.surname,students.name, courses.year, courses.name, COUNT(*) FROM `students` INNER JOIN exam_student on exam_student.student_id=students.id INNER JOIN exams on exam_student.exam_id=exams.id INNER JOIN courses ON courses.id=exams.course_id GROUP BY exam_student.exam_id ORDER BY `students`.`surname` ASC
